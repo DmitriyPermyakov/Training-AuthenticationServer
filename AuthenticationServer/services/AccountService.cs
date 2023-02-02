@@ -58,9 +58,20 @@ namespace AuthenticationServer.services
             }
         }
 
-        public Task Logout(LogoutRequest logoutRequest)
+        public async Task Logout(LogoutRequest logoutRequest)
         {
-            throw new NotImplementedException();
+            var tokenValidationParameters = new ValidationParametersFactory.ValidationParametersFactory(jwtSettings).AccessTokenValidationParameters;
+
+            SecurityToken validatedToken = tokenGenerator.ValidateToken(logoutRequest.AccessToken, tokenValidationParameters);
+
+            if (validatedToken == null)
+                throw new LogoutException("Invalid refresh token");
+
+            var refreshToken = await tokenRepository.GetByTokenAsync(logoutRequest.AccessToken);
+            if (refreshToken == null)
+                return;
+
+            await tokenRepository.RemoveAsync(refreshToken);            
         }
 
         public async Task RegisterAsync(RegisterRequest registerRequest)

@@ -9,6 +9,7 @@ using AuthenticationServer.Services;
 using AuthenticationServer.Exceptions;
 using AuthenticationServer.services;
 using AuthenticationServer.DTO;
+using AuthenticationServer.DTO.Logout;
 
 namespace AuthenticationServer.Controllers
 {
@@ -57,9 +58,22 @@ namespace AuthenticationServer.Controllers
 
         }
         [HttpGet("logout")]
-        public async Task<IActionResult> Logout()
+        public async Task<IActionResult> Logout(LogoutRequest logoutRequest)
         {
+            try
+            {
+                if(!ModelState.IsValid)
+                    return BadRequest(logoutRequest);
+                if (logoutRequest == null)
+                    return BadRequest("logout request is null");
 
+                await accountService.Logout(logoutRequest);
+                return Unauthorized("Successfully logout");
+            }
+            catch(LogoutException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("refresh")]
@@ -67,7 +81,7 @@ namespace AuthenticationServer.Controllers
         {
             try
             {
-                if (String.IsNullOrWhiteSpace(refreshToken))
+                if (string.IsNullOrWhiteSpace(refreshToken))
                     return Unauthorized("Refresh token is empty");
 
                 AuthenticationResult result = await accountService.RefreshTokenAsync(refreshToken);
