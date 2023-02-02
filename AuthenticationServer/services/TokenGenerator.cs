@@ -8,7 +8,7 @@ using System.Text;
 
 namespace AuthenticationServer.services
 {
-    enum TokenType
+    public enum TokenType
     {
         AccessToken,
         RefreshToken
@@ -24,7 +24,7 @@ namespace AuthenticationServer.services
             this.tokenRepository = tokenRepository;
         }
 
-        public async Task<string> GenerateToken(TokenType tokenType, User user)
+        public async Task<string> GenerateTokenAsync(TokenType tokenType, User user)
         {
             string tokenSecret = null;
             double expTime = 0;
@@ -76,8 +76,7 @@ namespace AuthenticationServer.services
                 await tokenRepository.CreateAsync(refreshToken);
             }
 
-            return createdToken;
-             
+            return createdToken;            
         }
 
         public SecurityToken ValidateToken(string token, TokenValidationParameters tokenValidationParameters)

@@ -1,10 +1,14 @@
-﻿using AuthenticationServer.DTO.Login;
+﻿using AuthenticationServer.DTO;
+using AuthenticationServer.DTO.Login;
 using AuthenticationServer.DTO.Logout;
 using AuthenticationServer.DTO.Register;
 using AuthenticationServer.Exceptions;
+using AuthenticationServer.JwtSettingsParameters;
+using AuthenticationServer.ValidationParametersFactory;
 using AuthenticationServer.Models;
 using AuthenticationServer.Repositories;
 using AuthenticationServer.Services;
+using Microsoft.IdentityModel.Tokens;
 
 namespace AuthenticationServer.services
 {
@@ -12,23 +16,40 @@ namespace AuthenticationServer.services
     {
         private readonly IUserRepository userRepository;        
         private readonly IPasswordHasher passwordHasher;
-        public AccountService(IUserRepository userRepository, IPasswordHasher passwordHasher)
+        private readonly ITokenGenerator tokenGenerator;
+        private readonly ITokenRepository tokenRepository;
+        private readonly JwtSettings jwtSettings;
+        public AccountService(IUserRepository userRepository, IPasswordHasher passwordHasher, ITokenGenerator tokenGenerator, JwtSettings jwtSettings, ITokenRepository tokenRepository)
         {
             this.userRepository = userRepository;
             this.passwordHasher = passwordHasher;
+            this.tokenGenerator = tokenGenerator;
+            this.jwtSettings = jwtSettings;
+            this.tokenRepository = tokenRepository;
         }
-        public Task Login(LoginRequest loginRequest)
+        public async Task<AuthenticationResult> LoginAsync(LoginRequest loginRequest)
         {
             try
             {
                 if (loginRequest == null)
                     throw new LoginException("User login parameter is null");
 
-                if (!IsUserValid)
+                User user = await userRepository.GetByEmailAsync(loginRequest.Email);
+
+                if (user == null)
                     throw new LoginException("Invalid login/password");
 
+                if (!passwordHasher.Verify(loginRequest.Password, user.PasswordHash))
+                    throw new LoginException("Invalid login/password");
 
+                string accessToken = await tokenGenerator.GenerateTokenAsync(TokenType.AccessToken, user);
+                string refreshToken = await tokenGenerator.GenerateTokenAsync(TokenType.RefreshToken, user);
 
+                return new AuthenticationResult()
+                {
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken
+                };
 
             }
             catch (Exception ex) 
@@ -42,7 +63,7 @@ namespace AuthenticationServer.services
             throw new NotImplementedException();
         }
 
-        public async Task Register(RegisterRequest registerRequest)
+        public async Task RegisterAsync(RegisterRequest registerRequest)
         {
             try
             {
@@ -61,16 +82,30 @@ namespace AuthenticationServer.services
                 throw new RegisterException(ex.Message);
             }
         }
-        private async Task<bool> IsUserValid(LoginRequest loginRequest)
+       
+        public async Task<AuthenticationResult> RefreshTokenAsync(string refreshToken)
         {
-            User user = await userRepository.GetByEmailAsync(loginRequest.Email);
-            if (user == null)
-                return false;
+            TokenValidationParameters tokenValidationParameters = new ValidationParametersFactory.ValidationParametersFactory(jwtSettings).RefreshTokenValidationParamters;
 
-            if (!passwordHasher.Verify(loginRequest.Password, user.PasswordHash))
-                return false;
+            SecurityToken validatedToken = tokenGenerator.ValidateToken(refreshToken, tokenValidationParameters);
+            if (validatedToken == null)
+                throw new RefreshTokenException("Refresh token invalid");
+            
+            RefreshToken refToken = await tokenRepository.GetByTokenAsync(refreshToken);
 
-            return true;
+            if (refreshToken == null)
+                throw new RefreshTokenException("Refresh token not found");
+
+            User user = await userRepository.GetByIdAsync(refToken.Id);
+
+            string accessToken = await tokenGenerator.GenerateTokenAsync(TokenType.AccessToken, user);
+
+            return new AuthenticationResult()
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken
+            };
         }
     }
+
 }

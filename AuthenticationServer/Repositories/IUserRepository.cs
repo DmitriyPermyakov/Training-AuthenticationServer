@@ -6,7 +6,7 @@ namespace AuthenticationServer.Repositories
     public interface IUserRepository
     {
         public Task CreateAsync(RegisterRequest userToCreate);
-        public Task GetByIdAsync(int id);
+        public Task<User> GetByIdAsync(int id);
         public Task<User> GetByEmailAsync(string email);
         public Task GetAllAsync();
         public Task UpdateAsync(User user);

@@ -50,9 +50,10 @@ namespace AuthenticationServer.Repositories
             return userFromDb;
         }
 
-        public Task GetByIdAsync(int id)
+        public async Task<User> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            User user = await context.Users.FirstOrDefaultAsync(user => user.Id == id);
+            return user;
         }
 
         public Task UpdateAsync(User user)

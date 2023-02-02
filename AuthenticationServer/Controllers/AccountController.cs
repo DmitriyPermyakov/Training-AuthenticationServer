@@ -8,6 +8,7 @@ using AuthenticationServer.DTO.Login;
 using AuthenticationServer.Services;
 using AuthenticationServer.Exceptions;
 using AuthenticationServer.services;
+using AuthenticationServer.DTO;
 
 namespace AuthenticationServer.Controllers
 {
@@ -29,7 +30,7 @@ namespace AuthenticationServer.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest(registerRequest);
 
-                await accountService.Register(registerRequest);
+                await accountService.RegisterAsync(registerRequest);
 
                 return Ok("User successfully registered");
             }
@@ -45,15 +46,13 @@ namespace AuthenticationServer.Controllers
             {
                 if(!ModelState.IsValid) 
                     return BadRequest(loginRequest);
-
-               
-
-
+                
+                AuthenticationResult response = await accountService.LoginAsync(loginRequest);
+                return Ok(response);
             }
-            catch (Exception)
+            catch (LoginException ex)
             {
-
-                throw;
+                return Unauthorized(ex.Message);                
             }
 
         }
@@ -61,7 +60,25 @@ namespace AuthenticationServer.Controllers
         public async Task<IActionResult> Logout()
         {
 
-        }       
+        }
+
+        [HttpGet("refresh")]
+        public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+        {
+            try
+            {
+                if (String.IsNullOrWhiteSpace(refreshToken))
+                    return Unauthorized("Refresh token is empty");
+
+                AuthenticationResult result = await accountService.RefreshTokenAsync(refreshToken);
+
+                return Ok(result);
+            }
+            catch(RefreshTokenException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+        }
 
     }
 }

@@ -27,6 +27,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IAccountService, AccountService>();
 builder.Services.AddTransient<ITokenGenerator, TokenGenerator>();
+builder.Services.AddTransient<ITokenRepository, TokenRepository>();
 builder.Services.AddSingleton(jwtSettings);
 
 TokenValidationParameters tokenValidationParameters = new ValidationParametersFactory(jwtSettings).AccessTokenValidationParameters;

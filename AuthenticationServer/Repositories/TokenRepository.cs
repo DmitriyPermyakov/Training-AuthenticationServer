@@ -26,7 +26,7 @@ namespace AuthenticationServer.Repositories
 
         public async Task RemoveAsync(RefreshToken token)
         {
-            await context.RefreshTokens.Remove(token);
+            context.RefreshTokens.Remove(token);
             await context.SaveChangesAsync();
         }
     }
