@@ -15,13 +15,10 @@ namespace AuthenticationServer.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly IUserRepository userRepo;
-        private readonly IPasswordHasher passwordHasher;
+       
         private readonly IAccountService accountService;
         public AccountController(IUserRepository userRepo, IPasswordHasher passwordHasher, IAccountService accountService)
-        {
-            this.userRepo = userRepo;
-            this.passwordHasher = passwordHasher;
+        {            
             this.accountService = accountService;
         }
         [HttpPost("register")]
@@ -64,19 +61,7 @@ namespace AuthenticationServer.Controllers
         public async Task<IActionResult> Logout()
         {
 
-        }
-
-        private async Task<bool> CheckUser(LoginRequest loginRequest)
-        {
-            User user = await userRepo.GetByEmailAsync(loginRequest.Email);
-            if (user == null)
-                return false;
-
-            if (!passwordHasher.Verify(loginRequest.Password, user.PasswordHash))
-                return false;
-
-            return true;
-        }
+        }       
 
     }
 }
