@@ -1,7 +1,8 @@
-﻿using AuthenticationServer.DTO.Register;
+using AuthenticationServer.DTO.Register;
 using AuthenticationServer.Models;
 using AuthenticationServer.Services;
 using Microsoft.EntityFrameworkCore;
+
 
 namespace AuthenticationServer.Repositories
 {
@@ -38,7 +39,7 @@ namespace AuthenticationServer.Repositories
         {
             throw new NotImplementedException();
         }
-
+        
         public Task GetAllAsync()
         {
             throw new NotImplementedException();
