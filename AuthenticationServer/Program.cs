@@ -11,10 +11,15 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 JwtSettings jwtSettings = new JwtSettings();
-ConfigurationBuilder configBuilder = new ConfigurationBuilder();
-var config = configBuilder.Build();
-config.Bind("JwtSettings", jwtSettings);
 
+var config = builder.Configuration;
+config.GetSection("JwtSettings").Bind(jwtSettings);
+builder.Services.AddSingleton(jwtSettings);
+string connectionString = config.GetConnectionString("AuthenticationServer");
+Console.WriteLine(connectionString);
+
+
+Console.WriteLine(jwtSettings.AccessTokenSecret);
 
 //ConfigurationBinder.Bind(config, jwtSettings);
 
@@ -25,25 +30,21 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<ApplicationDbContext>(opt =>
-{
-    opt.UseSqlServer(config.GetConnectionString("AuthenticationServer"));
-});
+builder.Services.AddDbContext<AuthenticationDbContext>(opt => opt.UseSqlServer(config.GetConnectionString("AuthenticationServer")));
 
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IAccountService, AccountService>();
 builder.Services.AddTransient<ITokenGenerator, TokenGenerator>();
 builder.Services.AddTransient<ITokenRepository, TokenRepository>();
-builder.Services.AddSingleton(jwtSettings);
 
-TokenValidationParameters tokenValidationParameters = new ValidationParametersFactory(jwtSettings).AccessTokenValidationParameters;
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.RequireHttpsMetadata= false;
-        options.SaveToken = true;
-        options.TokenValidationParameters = tokenValidationParameters;
-    });
+//TokenValidationParameters tokenValidationParameters = new ValidationParametersFactory(jwtSettings).AccessTokenValidationParameters;
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//    .AddJwtBearer(options =>
+//    {
+//        options.RequireHttpsMetadata= false;
+//        options.SaveToken = true;
+//        options.TokenValidationParameters = tokenValidationParameters;
+//    });
 
 builder.Services.AddCors(options =>
 {
