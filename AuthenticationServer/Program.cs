@@ -7,6 +7,7 @@ using AuthenticationServer.Repositories;
 using AuthenticationServer.services;
 using AuthenticationServer.ValidationParametersFactory;
 using Microsoft.EntityFrameworkCore;
+using AuthenticationServer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,8 +16,6 @@ JwtSettings jwtSettings = new JwtSettings();
 var config = builder.Configuration;
 config.GetSection("JwtSettings").Bind(jwtSettings);
 builder.Services.AddSingleton(jwtSettings);
-string connectionString = config.GetConnectionString("AuthenticationServer");
-Console.WriteLine(connectionString);
 
 
 Console.WriteLine(jwtSettings.AccessTokenSecret);
@@ -36,15 +35,16 @@ builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IAccountService, AccountService>();
 builder.Services.AddTransient<ITokenGenerator, TokenGenerator>();
 builder.Services.AddTransient<ITokenRepository, TokenRepository>();
+builder.Services.AddTransient<IPasswordHasher, PasswordHasher>();
 
-//TokenValidationParameters tokenValidationParameters = new ValidationParametersFactory(jwtSettings).AccessTokenValidationParameters;
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//    .AddJwtBearer(options =>
-//    {
-//        options.RequireHttpsMetadata= false;
-//        options.SaveToken = true;
-//        options.TokenValidationParameters = tokenValidationParameters;
-//    });
+TokenValidationParameters tokenValidationParameters = new ValidationParametersFactory(jwtSettings).AccessTokenValidationParameters;
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = tokenValidationParameters;
+    });
 
 builder.Services.AddCors(options =>
 {
