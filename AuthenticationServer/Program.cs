@@ -6,6 +6,7 @@ using AuthenticationServer.JwtSettingsParameters;
 using AuthenticationServer.Repositories;
 using AuthenticationServer.services;
 using AuthenticationServer.ValidationParametersFactory;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,11 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<ApplicationDbContext>(opt =>
+{
+    opt.UseSqlServer(config.GetConnectionString("AuthenticationServer"));
+});
 
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IAccountService, AccountService>();

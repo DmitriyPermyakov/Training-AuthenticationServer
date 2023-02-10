@@ -29,7 +29,8 @@ namespace AuthenticationServer.Repositories
             {
                 Name = userToCreate.UserName,
                 Email = userToCreate.Email,
-                PasswordHash = passwordHash
+                PasswordHash = passwordHash,
+                Roles = new List<Role>() { Role.User }
             };
 
             await context.Users.AddAsync(user);
