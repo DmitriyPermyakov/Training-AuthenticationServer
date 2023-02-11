@@ -34,6 +34,7 @@ namespace AuthenticationServer.Repositories
             };
 
             await context.Users.AddAsync(user);
+            await context.SaveChangesAsync();
         }
 
         public Task DeleteAsync(int id)

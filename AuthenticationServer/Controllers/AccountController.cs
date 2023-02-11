@@ -10,6 +10,7 @@ using AuthenticationServer.Exceptions;
 using AuthenticationServer.services;
 using AuthenticationServer.DTO;
 using AuthenticationServer.DTO.Logout;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AuthenticationServer.Controllers
 {
@@ -40,7 +41,7 @@ namespace AuthenticationServer.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpGet("login")]
+        [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
             try
@@ -57,6 +58,7 @@ namespace AuthenticationServer.Controllers
             }
 
         }
+        [Authorize()]
         [HttpGet("logout")]
         public async Task<IActionResult> Logout(LogoutRequest logoutRequest)
         {

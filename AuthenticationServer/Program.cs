@@ -17,13 +17,6 @@ var config = builder.Configuration;
 config.GetSection("JwtSettings").Bind(jwtSettings);
 builder.Services.AddSingleton(jwtSettings);
 
-
-Console.WriteLine(jwtSettings.AccessTokenSecret);
-
-//ConfigurationBinder.Bind(config, jwtSettings);
-
-// Add services to the container.
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -48,7 +41,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: "localHostConnection", builder => builder.WithOrigins("https://localhost:4200")
+    options.AddPolicy(name: "localHostConnection", builder => builder.WithOrigins("https://localhost:44361")
         .AllowAnyHeader()
         .WithMethods("PUT", "POST", "GET", "DELETE"));
 });
